@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Удалить · TripPlanner{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Удалить</h1>
+<div class="card card-body">
+  <p class="mb-3">Are you sure you want to delete <strong>{{ object }}</strong>?</p>
+  <form method="post" class="d-flex gap-2">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Удалить</button>
+    {% if back_url %}
+      <a class="btn btn-outline-secondary" href="{{ back_url }}">Отмена</a>
+    {% else %}
+      <a class="btn btn-outline-secondary" href="{% url 'trip_list' %}">Отмена</a>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

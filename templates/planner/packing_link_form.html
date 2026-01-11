@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Правка списка вещей · TripPlanner{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Редактировать вещь в поездке</h1>
+<div class="text-secondary mb-3">Поездка: <a href="{% url 'trip_detail' trip.pk %}">{{ trip.title }}</a></div>
+<form method="post" class="card card-body">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <div class="mb-3">
+    <label class="form-label">Вещь</label>
+    <input class="form-control" value="{{ link.item.name }}" disabled>
+  </div>
+  <div class="row">
+    <div class="col-6 mb-3">
+      <label class="form-label" for="id_quantity">Количество</label>
+      {{ form.quantity }}
+      {{ form.quantity.errors }}
+    </div>
+    <div class="col-6 mb-3">
+      <label class="form-label" for="id_is_packed">Собрано</label>
+      {{ form.is_packed }}
+      {{ form.is_packed.errors }}
+    </div>
+  </div>
+  <div class="mb-3">
+    <label class="form-label" for="id_note">Комментарий</label>
+    {{ form.note }}
+    {{ form.note.errors }}
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" type="submit">Сохранить</button>
+    <a class="btn btn-outline-secondary" href="{% url 'packing' trip.pk %}">Отмена</a>
+  </div>
+</form>
+{% endblock %}

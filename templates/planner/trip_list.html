@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Поездки · TripPlanner{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h3 mb-0">Поездки</h1>
+    <div class="text-secondary">Публичные поездки и ваши приватные</div>
+  </div>
+  {% if user.is_authenticated %}
+    <a class="btn btn-primary" href="{% url 'trip_create' %}">Создать поездку</a>
+  {% else %}
+    <a class="btn btn-outline-primary" href="{% url 'login' %}">Войти чтобы создать</a>
+  {% endif %}
+</div>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-4">
+    <input class="form-control" name="q" placeholder="Поиск" value="{{ q }}">
+  </div>
+  <div class="col-md-3">
+    <select class="form-select" name="sort">
+      <option value="new" {% if sort == 'new' %}selected{% endif %}>Сначала новые</option>
+      <option value="budget" {% if sort == 'budget' %}selected{% endif %}>Бюджет</option>
+      <option value="start" {% if sort == 'start' %}selected{% endif %}>Дата начала</option>
+    </select>
+  </div>
+  <div class="col-md-3">
+    <select class="form-select" name="dest">
+      <option value="">Все направления</option>
+      {% for d in destinations %}
+        <option value="{{ d.id }}" {% if dest_id == d.id %}selected{% endif %}>{{ d }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-secondary w-100" type="submit">Применить</button>
+  </div>
+</form>
+
+<div class="row g-3">
+  {% for trip in trips %}
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <h2 class="h5 mb-2"><a href="{% url 'trip_detail' trip.id %}">{{ trip.title }}</a></h2>
+            {% if not trip.is_public %}
+              <span class="badge text-bg-warning">Приватная</span>
+            {% endif %}
+          </div>
+          <div class="text-secondary">{{ trip.destination }} · {{ trip.start_date }} → {{ trip.end_date }}</div>
+          <div class="mt-2">Бюджет: <strong>{{ trip.budget }}</strong></div>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info">Поездок не найдено.</div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

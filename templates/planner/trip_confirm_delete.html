@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Удалить поездку · TripPlanner{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Удалить поездку</h1>
+<div class="card card-body">
+  <p>Удалить <strong>{{ trip.title }}</strong>?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Удалить</button>
+    <a class="btn btn-outline-secondary" href="{% url 'trip_detail' trip.id %}">Отмена</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Активность · TripPlanner{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">{{ title }}</h1>
+<div class="text-secondary mb-3">Поездка: <a href="{% url 'trip_detail' trip.pk %}">{{ trip.title }}</a></div>
+<form method="post" class="card card-body">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <div class="mb-3">
+    <label class="form-label" for="id_title">Название</label>
+    {{ form.title }}
+    {{ form.title.errors }}
+  </div>
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label class="form-label" for="id_date">Дата</label>
+      {{ form.date }}
+      {{ form.date.errors }}
+    </div>
+    <div class="col-md-6 mb-3">
+      <label class="form-label" for="id_cost">Стоимость (€)</label>
+      {{ form.cost }}
+      {{ form.cost.errors }}
+    </div>
+  </div>
+  <div class="mb-3">
+    <label class="form-label" for="id_tags">Теги</label>
+    {{ form.tags }}
+    {{ form.tags.errors }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label" for="id_notes">Описание</label>
+    {{ form.notes }}
+    {{ form.notes.errors }}
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" type="submit">Сохранить</button>
+    <a class="btn btn-outline-secondary" href="{% url 'trip_detail' trip.pk %}">Отмена</a>
+  </div>
+</form>
+{% endblock %}

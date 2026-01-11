@@ -1,0 +1,14 @@
+body {
+  padding-bottom: 40px;
+}
+
+.chart-box {
+  position: relative;
+  height: 240px;
+  width: 100%;
+}
+
+.chart-box canvas {
+  height: 240px !important;
+  max-height: 240px;
+}

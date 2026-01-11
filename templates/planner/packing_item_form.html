@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Элемент списка вещей · TripPlanner{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">{{ title }}</h1>
+<form method="post" class="card card-body">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <div class="row g-3">
+    <div class="col-md-8">
+      <label class="form-label" for="id_name">Название</label>
+      {{ form.name }}
+      {{ form.name.errors }}
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" for="id_category">Категория</label>
+      {{ form.category }}
+      {{ form.category.errors }}
+    </div>
+  </div>
+  <div class="mt-3 d-flex gap-2">
+    <button class="btn btn-primary" type="submit">Сохранить</button>
+    <a class="btn btn-outline-secondary" href="{% url 'trip_detail' trip.pk %}">Назад</a>
+  </div>
+</form>
+{% endblock %}

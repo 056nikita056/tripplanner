@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Погода · TripPlanner{% endblock %}
+{% block content %}
+<h1 class="h3 mb-1">Погода</h1>
+<div class="text-secondary mb-3">Destination: {{ destination }}</div>
+
+{% if weather.ok %}
+  <div class="card card-body">
+    <div class="h5 mb-1">{{ weather.summary }}</div>
+    <div class="text-secondary">Source: Open-Meteo (cached)</div>
+  </div>
+{% else %}
+  <div class="alert alert-warning">{{ weather.summary }}</div>
+{% endif %}
+
+<a class="btn btn-outline-secondary" href="{% url 'trip_list' %}">Back</a>
+{% endblock %}

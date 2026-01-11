@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Поездка · TripPlanner{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">{{ title }}</h1>
+<form method="post" class="card card-body">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <div class="mb-3">
+    <label class="form-label" for="id_title">Название</label>
+    {{ form.title }}
+    {{ form.title.errors }}
+  </div>
+  <div class="mb-3">
+    <label class="form-label" for="id_destination">Направление</label>
+    {{ form.destination }}
+    {{ form.destination.errors }}
+  </div>
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label class="form-label" for="id_start_date">Начало</label>
+      {{ form.start_date }}
+      {{ form.start_date.errors }}
+    </div>
+    <div class="col-md-6 mb-3">
+      <label class="form-label" for="id_end_date">Окончание</label>
+      {{ form.end_date }}
+      {{ form.end_date.errors }}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label class="form-label" for="id_budget">Бюджет</label>
+      {{ form.budget }}
+      {{ form.budget.errors }}
+    </div>
+    <div class="col-md-6 mb-3 d-flex align-items-end">
+      <div class="form-check">
+        {{ form.is_public }}
+        <label class="form-check-label" for="id_is_public">Публичная</label>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" type="submit">Сохранить</button>
+    <a class="btn btn-outline-secondary" href="{% url 'trip_list' %}">Отмена</a>
+  </div>
+</form>
+{% endblock %}

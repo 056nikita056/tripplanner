@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}{{ trip.title }} · TripPlanner{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ trip.title }}</h1>
+    <div class="text-secondary">{{ trip.destination }} · {{ trip.start_date }} → {{ trip.end_date }}</div>
+    <div class="text-secondary">Бюджет: {{ trip.budget }} · Потрачено: {{ total_cost }} · Осталось: {{ remaining }}</div>
+  </div>
+  <div class="d-flex gap-2">
+    {% if user.is_authenticated and trip.owner == user %}
+      <a class="btn btn-outline-primary" href="{% url 'trip_edit' trip.pk %}">Редактировать</a>
+      <a class="btn btn-outline-danger" href="{% url 'trip_delete' trip.pk %}">Удалить</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if forecast %}
+  <div class="alert alert-info">
+    <strong>Погода:</strong> {{ forecast.summary }}
+  </div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="h5 mb-0">Активности</div>
+        {% if user.is_authenticated and trip.owner == user %}
+          <a class="btn btn-sm btn-primary" href="{% url 'activity_create' trip.pk %}">Добавить</a>
+        {% endif %}
+      </div>
+      {% if trip.activities.all %}
+        <div class="list-group">
+          {% for a in trip.activities.all %}
+            <div class="list-group-item">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <div class="fw-semibold">{{ a.title }}</div>
+                  <div class="text-secondary small">{{ a.date }} · {{ a.cost }}</div>
+                </div>
+                {% if user.is_authenticated and trip.owner == user %}
+                  <div class="d-flex gap-2">
+                    <a class="btn btn-sm btn-outline-primary" href="{% url 'activity_edit' a.pk %}">Редактировать</a>
+                    <a class="btn btn-sm btn-outline-danger" href="{% url 'activity_delete' a.pk %}">Удалить</a>
+                  </div>
+                {% endif %}
+              </div>
+              {% if a.tags.all %}
+                <div class="mt-2">
+                  {% for t in a.tags.all %}
+                    <span class="badge text-bg-secondary">{{ t.name }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+              {% if a.notes %}
+                <div class="mt-2">{{ a.notes }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-secondary">Пока нет активностей.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card card-body mb-3">
+      <div class="h5">Расходы по дням</div>
+      <div class="chart-box"><canvas id="chartByDay"></canvas></div>
+    </div>
+    <div class="card card-body">
+      <div class="h5">Расходы по тегам</div>
+      <div class="chart-box"><canvas id="chartByTag"></canvas></div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="h5 mb-0">Список вещей</div>
+        {% if user.is_authenticated and trip.owner == user %}
+          <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'packing_items' %}">Мои вещи</a>
+            <a class="btn btn-sm btn-primary" href="{% url 'trip_packing_add' trip.pk %}">Добавить в поездку</a>
+          </div>
+        {% endif %}
+      </div>
+      {% if packing_links %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Вещь</th>
+                <th>Кол-во</th>
+                <th>Статус</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for link in packing_links %}
+                <tr>
+                  <td>{{ link.item.name }}</td>
+                  <td>{{ link.quantity }}</td>
+                  <td>
+                    {% if link.is_packed %}
+                      <span class="badge text-bg-success">Упаковано</span>
+                    {% else %}
+                      <span class="badge text-bg-warning">Нужно</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    {% if user.is_authenticated and trip.owner == user %}
+                      <a class="btn btn-sm btn-outline-success" href="{% url 'trip_packing_toggle' link.pk %}">Отметить</a>
+                      <a class="btn btn-sm btn-outline-danger" href="{% url 'trip_packing_remove' link.pk %}">Убрать</a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-secondary">Пока нет вещей для поездки.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  const days = {{ chart_days_json|safe }};
+  const dayTotals = {{ chart_day_totals_json|safe }};
+  const tags = {{ chart_tags_json|safe }};
+  const tagTotals = {{ chart_tag_totals_json|safe }};
+
+  const chartByDayEl = document.getElementById('chartByDay');
+  const chartByTagEl = document.getElementById('chartByTag');
+
+  new Chart(chartByDayEl, {
+    type: 'line',
+    data: { labels: days, datasets: [{ label: 'Потрачено', data: dayTotals }] },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+    new Chart(chartByTagEl, {
+    type: 'bar',
+    data: { labels: tags, datasets: [{ label: 'Потрачено', data: tagTotals }] },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Список вещей · TripPlanner{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h3 mb-0">Список вещей list</h1>
+    <div class="text-secondary">Trip: <a href="{% url 'trip_detail' trip.pk %}">{{ trip.title }}</a></div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card card-body">
+      <h2 class="h5">Добавить вещь</h2>
+      <form method="post">
+        {% csrf_token %}
+        {{ link_form.non_field_errors }}
+        <div class="mb-3">
+          <label class="form-label" for="id_item">Item</label>
+          {{ link_form.item }}
+          {{ link_form.item.errors }}
+        </div>
+        <div class="row">
+          <div class="col">
+            <label class="form-label" for="id_quantity">Qty</label>
+            {{ link_form.quantity }}
+            {{ link_form.quantity.errors }}
+          </div>
+          <div class="col">
+            <label class="form-label" for="id_note">Note</label>
+            {{ link_form.note }}
+            {{ link_form.note.errors }}
+          </div>
+        </div>
+        <button class="btn btn-primary mt-3" type="submit" name="action" value="add">Добавить</button>
+      </form>
+      <hr>
+      <h2 class="h6">Создать новую вещь в каталоге</h2>
+      <form method="post">
+        {% csrf_token %}
+        {{ item_form.non_field_errors }}
+        <div class="mb-2">
+          <label class="form-label" for="id_name">Name</label>
+          {{ item_form.name }}
+          {{ item_form.name.errors }}
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="id_category">Category</label>
+          {{ item_form.category }}
+          {{ item_form.category.errors }}
+        </div>
+        <button class="btn btn-outline-primary" type="submit" name="action" value="create_item">Создать</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card card-body">
+      <h2 class="h5">Items</h2>
+      {% if links %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th class="text-center">Qty</th>
+                <th>Note</th>
+                <th class="text-center">Packed</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for l in links %}
+                <tr>
+                  <td>{{ l.item.name }} <div class="text-secondary small">{{ l.item.category }}</div></td>
+                  <td class="text-center">{{ l.quantity }}</td>
+                  <td>{{ l.note }}</td>
+                  <td class="text-center">
+                    {% if l.is_packed %}
+                      <span class="badge text-bg-success">Yes</span>
+                    {% else %}
+                      <span class="badge text-bg-secondary">No</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    <form method="post" class="d-inline">
+                      {% csrf_token %}
+                      <input type="hidden" name="link_id" value="{{ l.id }}">
+                      <button class="btn btn-sm btn-outline-secondary" type="submit" name="action" value="toggle">Toggle</button>
+                    </form>
+                    <form method="post" class="d-inline">
+                      {% csrf_token %}
+                      <input type="hidden" name="link_id" value="{{ l.id }}">
+                      <button class="btn btn-sm btn-outline-danger" type="submit" name="action" value="remove">Убрать</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-secondary">Пока нет вещей.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
