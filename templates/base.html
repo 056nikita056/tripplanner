@@ -14,6 +14,14 @@
     <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
       <div class="container">
         <a class="navbar-brand" href="{% url 'trip_list' %}">TripPlanner</a>
+
+        {% with p=request.path %}
+          <div class="ms-3 d-flex align-items-center gap-2">
+            <a class="nav-link px-2 {% if p == '/' or p|slice:':7' == '/trips/' %}active fw-semibold{% endif %}" href="{% url 'trip_list' %}">Поездки</a>
+            <a class="nav-link px-2 {% if p|slice:':11' == '/dashboard/' %}active fw-semibold{% endif %}" href="{% url 'dashboard' %}">Дашборд</a>
+            <a class="nav-link px-2 {% if p|slice:':15' == '/packing/items/' %}active fw-semibold{% endif %}" href="{% url 'packing_items' %}">Вещи</a>
+          </div>
+        {% endwith %}
         <div class="ms-auto d-flex gap-2">
           {% if user.is_authenticated %}
             <span class="navbar-text">{{ user.username }}</span>
