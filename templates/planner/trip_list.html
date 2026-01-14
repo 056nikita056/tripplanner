@@ -47,27 +47,41 @@
   </div>
 {% endif %}
 
-<div class="row g-3">
-  {% for trip in trips %}
-    <div class="col-md-6">
-      <div class="card h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between">
-            <h2 class="h5 mb-2"><a href="{% url 'trip_detail' trip.id %}">{{ trip.title }}</a></h2>
-            {% if not trip.is_public %}
-              <span class="badge text-bg-warning">Приватная</span>
-            {% endif %}
-          </div>
-          <div class="text-secondary">{{ trip.destination }} · {{ trip.start_date }} → {{ trip.end_date }}</div>
-          <div class="mt-2">Бюджет: <strong>{{ trip.budget|default_if_none:0|floatformat:2 }} $</strong></div>
-        </div>
-      </div>
-    </div>
-  {% empty %}
-    <div class="col-12">
-      <div class="alert alert-info">Поездок не найдено.</div>
-    </div>
-  {% endfor %}
+<div class="card card-body">
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Поездка</th>
+          <th>Направление</th>
+          <th>Даты</th>
+          <th class="text-end">Бюджет</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for trip in trips %}
+          <tr>
+            <td>
+              <a class="fw-semibold" href="{% url 'trip_detail' trip.id %}">{{ trip.title }}</a>
+              {% if not trip.is_public %}
+                <span class="badge text-bg-warning ms-2">Приватная</span>
+              {% endif %}
+              {% if user.is_authenticated and trip.owner == user %}
+                <span class="badge text-bg-light border ms-2">Моя</span>
+              {% endif %}
+            </td>
+            <td>{{ trip.destination }}</td>
+            <td>{{ trip.start_date|date:"d.m.Y" }} → {{ trip.end_date|date:"d.m.Y" }}</td>
+            <td class="text-end">{{ trip.budget|default_if_none:0|floatformat:2 }} $</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="text-center text-secondary py-4">Поездок не найдено.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 
 {% if page_obj.has_other_pages %}
