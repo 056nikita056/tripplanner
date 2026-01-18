@@ -3,7 +3,7 @@
 {% block content %}
 <h1 class="h3 mb-3">Удалить</h1>
 <div class="card card-body">
-  <p class="mb-3">Are you sure you want to delete <strong>{{ object }}</strong>?</p>
+  <p class="mb-3">Точно удалить <strong>{{ object }}</strong>?</p>
   <form method="post" class="d-flex gap-2">
     {% csrf_token %}
     <button class="btn btn-danger" type="submit">Удалить</button>

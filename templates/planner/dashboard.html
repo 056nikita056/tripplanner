@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Дашборд · TripPlanner{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Дашборд</h1>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3">
+    <div class="card card-body">
+      <div class="text-secondary">Поездок всего</div>
+      <div class="h4 mb-0">{{ trip_stats.trips_total|default:0 }}</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card card-body">
+      <div class="text-secondary">Публичных</div>
+      <div class="h4 mb-0">{{ trip_stats.public_total|default:0 }}</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card card-body">
+      <div class="text-secondary">Приватных</div>
+      <div class="h4 mb-0">{{ trip_stats.private_total|default:0 }}</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card card-body">
+      <div class="text-secondary">Суммарный бюджет</div>
+      <div class="h4 mb-0">{{ trip_stats.total_budget|default:0 }}</div>
+      <div class="text-secondary small">Средний: {{ trip_stats.avg_budget|floatformat:0|default:"0" }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card card-body h-100">
+      <h2 class="h5 mb-3">Расходы</h2>
+      <div class="row g-2">
+        <div class="col-sm-6">
+          <div class="text-secondary">Потрачено всего</div>
+          <div class="h4">{{ activity_stats.total_spent|default:0 }}</div>
+        </div>
+        <div class="col-sm-6">
+          <div class="text-secondary">Средняя стоимость активности</div>
+          <div class="h4">{{ activity_stats.avg_activity_cost|floatformat:0|default:"0" }}</div>
+        </div>
+      </div>
+      <div class="text-secondary small mt-2">Данные считаются по вашим поездкам.</div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card card-body h-100">
+      <h2 class="h5 mb-3">Топ направлений</h2>
+      {% if top_destinations %}
+        <div class="table-responsive">
+          <table class="table mb-0 align-middle">
+            <thead>
+              <tr>
+                <th>Направление</th>
+                <th class="text-center">Поездок</th>
+                <th class="text-end">Бюджет</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for d in top_destinations %}
+                <tr>
+                  <td>{{ d.destination__country }} · {{ d.destination__name }}</td>
+                  <td class="text-center">{{ d.trips_count }}</td>
+                  <td class="text-end">{{ d.budget_sum|default:0 }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-secondary">Пока нет данных по направлениям.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-12">
+    <div class="card card-body">
+      <h2 class="h5 mb-3">Теги по сумме расходов</h2>
+      {% if top_tags %}
+        <div class="table-responsive">
+          <table class="table mb-0 align-middle">
+            <thead>
+              <tr>
+                <th>Тег</th>
+                <th class="text-center">Активностей</th>
+                <th class="text-end">Сумма</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in top_tags %}
+                <tr>
+                  <td>{{ t.tags__name|default:"Без тега" }}</td>
+                  <td class="text-center">{{ t.uses }}</td>
+                  <td class="text-end">{{ t.total|default:0 }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-secondary">Пока нет активностей с тегами.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

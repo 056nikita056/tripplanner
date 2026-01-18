@@ -1,153 +1,340 @@
 {% extends 'base.html' %}
 {% block title %}{{ trip.title }} · TripPlanner{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+<div class="d-flex justify-content-between align-items-start mb-3">
   <div>
     <h1 class="h3 mb-1">{{ trip.title }}</h1>
     <div class="text-secondary">{{ trip.destination }} · {{ trip.start_date }} → {{ trip.end_date }}</div>
-    <div class="text-secondary">Бюджет: {{ trip.budget }} · Потрачено: {{ total_cost }} · Осталось: {{ remaining }}</div>
+    <div class="mt-2">Бюджет: <strong>{{ trip.budget|floatformat:2 }}</strong></div>
   </div>
   <div class="d-flex gap-2">
     {% if user.is_authenticated and trip.owner == user %}
-      <a class="btn btn-outline-primary" href="{% url 'trip_edit' trip.pk %}">Редактировать</a>
-      <a class="btn btn-outline-danger" href="{% url 'trip_delete' trip.pk %}">Удалить</a>
+      <a class="btn btn-outline-secondary" href="{% url 'trip_edit' trip.id %}">Редактировать</a>
+      <a class="btn btn-outline-danger" href="{% url 'trip_delete' trip.id %}">Удалить</a>
     {% endif %}
+    <a class="btn btn-outline-secondary" href="{% url 'trip_list' %}">К списку</a>
   </div>
 </div>
 
-{% if forecast %}
-  <div class="alert alert-info">
-    <strong>Погода:</strong> {{ forecast.summary }}
+<div class="row g-3 mb-3">
+  <div class="col-md-3">
+    <div class="card card-body h-100">
+      <div class="text-secondary">Потрачено</div>
+      <div class="h4 mb-1">{{ total_cost|floatformat:2 }}</div>
+      <div class="text-secondary">Осталось: <strong>{{ remaining|floatformat:2 }}</strong></div>
+      {% if budget_pct is not None %}
+        <div class="text-secondary small mt-1">Использовано: {{ budget_pct }}%</div>
+      {% endif %}
+    </div>
   </div>
-{% endif %}
-
-<div class="row g-3">
-  <div class="col-lg-6">
-    <div class="card card-body">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="h5 mb-0">Активности</div>
-        {% if user.is_authenticated and trip.owner == user %}
-          <a class="btn btn-sm btn-primary" href="{% url 'activity_create' trip.pk %}">Добавить</a>
-        {% endif %}
-      </div>
-      {% if trip.activities.all %}
-        <div class="list-group">
-          {% for a in trip.activities.all %}
-            <div class="list-group-item">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <div class="fw-semibold">{{ a.title }}</div>
-                  <div class="text-secondary small">{{ a.date }} · {{ a.cost }}</div>
-                </div>
-                {% if user.is_authenticated and trip.owner == user %}
-                  <div class="d-flex gap-2">
-                    <a class="btn btn-sm btn-outline-primary" href="{% url 'activity_edit' a.pk %}">Редактировать</a>
-                    <a class="btn btn-sm btn-outline-danger" href="{% url 'activity_delete' a.pk %}">Удалить</a>
-                  </div>
-                {% endif %}
-              </div>
-              {% if a.tags.all %}
-                <div class="mt-2">
-                  {% for t in a.tags.all %}
-                    <span class="badge text-bg-secondary">{{ t.name }}</span>
-                  {% endfor %}
-                </div>
-              {% endif %}
-              {% if a.notes %}
-                <div class="mt-2">{{ a.notes }}</div>
-              {% endif %}
-            </div>
-          {% endfor %}
-        </div>
+  <div class="col-md-3">
+    <div class="card card-body h-100">
+      <div class="text-secondary">Самая дорогая активность</div>
+      {% if most_expensive_activity %}
+        <div class="h5 mb-1">{{ most_expensive_activity.title }}</div>
+        <div class="text-secondary">{{ most_expensive_activity.date }} · {{ most_expensive_activity.cost|floatformat:2 }}</div>
       {% else %}
         <div class="text-secondary">Пока нет активностей.</div>
       {% endif %}
     </div>
   </div>
-
-  <div class="col-lg-6">
-    <div class="card card-body mb-3">
-      <div class="h5">Расходы по дням</div>
-      <div class="chart-box"><canvas id="chartByDay"></canvas></div>
-    </div>
-    <div class="card card-body">
-      <div class="h5">Расходы по тегам</div>
-      <div class="chart-box"><canvas id="chartByTag"></canvas></div>
+  <div class="col-md-3">
+    <div class="card card-body h-100">
+      <div class="text-secondary">Самый дорогой день</div>
+      {% if most_expensive_day %}
+        <div class="h5 mb-1">{{ most_expensive_day.date }}</div>
+        <div class="text-secondary">Сумма: {{ most_expensive_day.total|floatformat:2 }}</div>
+      {% else %}
+        <div class="text-secondary">Пока нет активностей.</div>
+      {% endif %}
     </div>
   </div>
+  <div class="col-md-3">
+    <div class="card card-body h-100">
+      <div class="text-secondary">Список вещей</div>
+      {% if total_packing %}
+        <div class="h5 mb-1">{{ packed_count }} из {{ total_packing }}</div>
+        {% if packed_pct is not None %}
+          <div class="text-secondary">Готовность: {{ packed_pct }}%</div>
+        {% endif %}
+      {% else %}
+        <div class="text-secondary">Пока ничего не добавлено.</div>
+      {% endif %}
+      {% if user.is_authenticated and trip.owner == user %}
+        <div class="mt-2">
+          <a class="btn btn-sm btn-outline-primary" href="#packing">Перейти к вещам</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
 
-  <div class="col-12">
+<div class="row g-3 mb-3">
+  <div class="col-lg-6">
+    <div class="card card-body h-100">
+      <h2 class="h5">Расходы по дням</h2>
+      <div style="height: 260px;">
+        <canvas id="chartByDay"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card card-body h-100">
+      <h2 class="h5">Расходы по тегам</h2>
+      <div style="height: 260px;">
+        <canvas id="chartByTag"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
     <div class="card card-body">
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="h5 mb-0">Список вещей</div>
+        <h2 class="h5 mb-0">Активности</h2>
         {% if user.is_authenticated and trip.owner == user %}
-          <div class="d-flex gap-2">
-            <a class="btn btn-sm btn-outline-secondary" href="{% url 'packing_items' %}">Мои вещи</a>
-            <a class="btn btn-sm btn-primary" href="{% url 'trip_packing_add' trip.pk %}">Добавить в поездку</a>
-          </div>
+          <a class="btn btn-sm btn-primary" href="{% url 'activity_create' trip.id %}">Добавить</a>
         {% endif %}
       </div>
-      {% if packing_links %}
+
+      {% if activities %}
         <div class="table-responsive">
           <table class="table align-middle">
             <thead>
               <tr>
-                <th>Вещь</th>
-                <th>Кол-во</th>
-                <th>Статус</th>
-                <th></th>
+                <th>Название</th>
+                <th>Дата</th>
+                <th class="text-end">Стоимость</th>
+                <th>Теги</th>
+                {% if user.is_authenticated and trip.owner == user %}<th></th>{% endif %}
               </tr>
             </thead>
             <tbody>
-              {% for link in packing_links %}
+              {% for a in activities %}
                 <tr>
-                  <td>{{ link.item.name }}</td>
-                  <td>{{ link.quantity }}</td>
+                  <td>{{ a.title }}{% if a.notes %}<div class="text-secondary small">{{ a.notes }}</div>{% endif %}</td>
+                  <td>{{ a.date }}</td>
+                  <td class="text-end">{{ a.cost|floatformat:2 }}</td>
                   <td>
-                    {% if link.is_packed %}
-                      <span class="badge text-bg-success">Упаковано</span>
-                    {% else %}
-                      <span class="badge text-bg-warning">Нужно</span>
-                    {% endif %}
+                    {% for t in a.tags.all %}
+                      <span class="badge text-bg-light border">{{ t.name }}</span>
+                    {% empty %}
+                      <span class="text-secondary">—</span>
+                    {% endfor %}
                   </td>
-                  <td class="text-end">
-                    {% if user.is_authenticated and trip.owner == user %}
-                      <a class="btn btn-sm btn-outline-success" href="{% url 'trip_packing_toggle' link.pk %}">Отметить</a>
-                      <a class="btn btn-sm btn-outline-danger" href="{% url 'trip_packing_remove' link.pk %}">Убрать</a>
-                    {% endif %}
-                  </td>
+                  {% if user.is_authenticated and trip.owner == user %}
+                    <td class="text-end">
+                      <a class="btn btn-sm btn-outline-secondary" href="{% url 'activity_edit' a.id %}">Ред.</a>
+                      <a class="btn btn-sm btn-outline-danger" href="{% url 'activity_delete' a.id %}">Удал.</a>
+                    </td>
+                  {% endif %}
                 </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
       {% else %}
-        <div class="text-secondary">Пока нет вещей для поездки.</div>
+        <div class="text-secondary">Пока нет активностей. Добавь первую — и появятся графики и метрики.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card card-body mb-3">
+      <h2 class="h5">Погода</h2>
+      {% if forecast and forecast.ok %}
+        <div class="h6 mb-1">{{ forecast.summary }}</div>
+        {% if forecast.data.current %}
+          <div class="mb-2">
+            Сейчас: <strong>{{ forecast.data.current.temperature_2m|floatformat:1 }}°C</strong>,
+            ветер {{ forecast.data.current.wind_speed_10m|floatformat:1 }} м/с
+          </div>
+        {% endif %}
+        {% if weather_rows %}
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Дата</th>
+                  <th class="text-end">Мин</th>
+                  <th class="text-end">Макс</th>
+                  <th class="text-end">Осадки, %</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in weather_rows %}
+                  <tr>
+                    <td>{{ r.date }}</td>
+                    <td class="text-end">{{ r.tmin|floatformat:1 }}</td>
+                    <td class="text-end">{{ r.tmax|floatformat:1 }}</td>
+                    <td class="text-end">{{ r.pop|floatformat:0 }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-secondary">Детальный прогноз появится ближе к датам поездки (обычно за 14 дней).</div>
+        {% endif %}
+      {% else %}
+        <div class="text-secondary">Нет прогноза: у направления не заданы координаты.</div>
+      {% endif %}
+    </div>
+
+    <div class="card card-body" id="packing">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h5 mb-0">Вещи для поездки</h2>
+        {% if user.is_authenticated and trip.owner == user %}
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'trip_packing_add' trip.id %}">Добавить</a>
+        {% endif %}
+      </div>
+
+      {% if packing_links %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Вещь</th>
+                <th class="text-center">Кол-во</th>
+                <th class="text-center">Статус</th>
+                {% if user.is_authenticated and trip.owner == user %}<th></th>{% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for link in packing_links %}
+                <tr data-link-id="{{ link.id }}">
+                  <td>{{ link.item.name }} <div class="text-secondary small">{{ link.item.category }}</div></td>
+                  <td class="text-center">{{ link.quantity }}</td>
+                  <td class="text-center">
+                    <span class="badge {% if link.is_packed %}text-bg-success{% else %}text-bg-secondary{% endif %} js-pack-badge">
+                      {% if link.is_packed %}Упаковано{% else %}Не упаковано{% endif %}
+                    </span>
+                  </td>
+                  {% if user.is_authenticated and trip.owner == user %}
+                    <td class="text-end">
+                      <form method="post" action="{% url 'trip_packing_toggle' link.id %}" class="d-inline js-pack-toggle" data-api="{% url 'trip_packing_toggle_api' link.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-secondary" type="submit">Переключить</button>
+                      </form>
+                      <a class="btn btn-sm btn-outline-danger" href="{% url 'trip_packing_remove' link.id %}">Убрать</a>
+                    </td>
+                  {% endif %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-secondary">Пока нет вещей в этой поездке.</div>
       {% endif %}
     </div>
   </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-  const days = {{ chart_days_json|safe }};
-  const dayTotals = {{ chart_day_totals_json|safe }};
-  const tags = {{ chart_tags_json|safe }};
-  const tagTotals = {{ chart_tag_totals_json|safe }};
+  const chartDays = {{ chart_days_json|safe }};
+  const chartDayTotals = {{ chart_day_totals_json|safe }};
+  const chartTags = {{ chart_tags_json|safe }};
+  const chartTagTotals = {{ chart_tag_totals_json|safe }};
 
-  const chartByDayEl = document.getElementById('chartByDay');
-  const chartByTagEl = document.getElementById('chartByTag');
+  const ctxDay = document.getElementById('chartByDay');
+  if (ctxDay) {
+    new Chart(ctxDay, {
+      type: 'bar',
+      data: {
+        labels: chartDays,
+        datasets: [{
+          label: 'Потрачено',
+          data: chartDayTotals
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: 'Сумма' }
+          }
+        }
+      }
+    });
+  }
 
-  new Chart(chartByDayEl, {
-    type: 'line',
-    data: { labels: days, datasets: [{ label: 'Потрачено', data: dayTotals }] },
-    options: { responsive: true, maintainAspectRatio: false }
-  });
+  const ctxTag = document.getElementById('chartByTag');
+  if (ctxTag) {
+    new Chart(ctxTag, {
+      type: 'pie',
+      data: {
+        labels: chartTags,
+        datasets: [{
+          label: 'Потрачено',
+          data: chartTagTotals
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  }
 
-    new Chart(chartByTagEl, {
-    type: 'bar',
-    data: { labels: tags, datasets: [{ label: 'Потрачено', data: tagTotals }] },
-    options: { responsive: true, maintainAspectRatio: false }
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+
+  document.querySelectorAll('.js-pack-toggle').forEach((form) => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = form.dataset.api;
+      const csrfToken = getCookie('csrftoken');
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+        if (!res.ok) {
+          form.submit();
+          return;
+        }
+        const data = await res.json();
+        if (!data.ok) {
+          form.submit();
+          return;
+        }
+        const row = form.closest('tr');
+        const badge = row.querySelector('.js-pack-badge');
+        if (badge) {
+          if (data.is_packed) {
+            badge.classList.remove('text-bg-secondary');
+            badge.classList.add('text-bg-success');
+            badge.textContent = 'Упаковано';
+          } else {
+            badge.classList.remove('text-bg-success');
+            badge.classList.add('text-bg-secondary');
+            badge.textContent = 'Не упаковано';
+          }
+        }
+      } catch (err) {
+        form.submit();
+      }
+    });
   });
 </script>
 {% endblock %}

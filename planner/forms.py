@@ -3,14 +3,42 @@ from django import forms
 from .models import Activity, PackingItem, Trip, TripPackingItem
 
 
+def _apply_bootstrap(form: forms.Form) -> None:
+    for field in form.fields.values():
+        widget = field.widget
+        cls = widget.attrs.get('class', '')
+        if isinstance(widget, forms.CheckboxInput):
+            bootstrap = 'form-check-input'
+        elif isinstance(widget, (forms.Select, forms.SelectMultiple)):
+            bootstrap = 'form-select'
+        else:
+            bootstrap = 'form-control'
+        widget.attrs['class'] = (cls + ' ' + bootstrap).strip()
+
+
 class TripForm(forms.ModelForm):
     class Meta:
         model = Trip
         fields = ['title', 'destination', 'start_date', 'end_date', 'budget', 'is_public']
+        labels = {
+            'title': 'Название поездки',
+            'destination': 'Направление',
+            'start_date': 'Дата начала',
+            'end_date': 'Дата окончания',
+            'budget': 'Бюджет',
+            'is_public': 'Публичная поездка',
+        }
+        help_texts = {
+            'is_public': 'Если выключить, поездку увидите только вы.',
+        }
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_bootstrap(self)
 
     def clean(self):
         cleaned = super().clean()
@@ -28,6 +56,13 @@ class ActivityForm(forms.ModelForm):
     class Meta:
         model = Activity
         fields = ['title', 'date', 'cost', 'notes', 'tags']
+        labels = {
+            'title': 'Название активности',
+            'date': 'Дата',
+            'cost': 'Стоимость',
+            'notes': 'Заметки',
+            'tags': 'Теги',
+        }
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'notes': forms.Textarea(attrs={'rows': 3}),
@@ -39,6 +74,7 @@ class ActivityForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.owner:
             self.fields['tags'].queryset = self.fields['tags'].queryset.filter(owner=self.owner)
+        _apply_bootstrap(self)
 
     def clean(self):
         cleaned = super().clean()
@@ -56,6 +92,14 @@ class PackingItemForm(forms.ModelForm):
     class Meta:
         model = PackingItem
         fields = ['name', 'category']
+        labels = {
+            'name': 'Название',
+            'category': 'Категория',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_bootstrap(self)
 
     def clean_name(self):
         name = (self.cleaned_data.get('name') or '').strip()
@@ -68,12 +112,19 @@ class TripPackingItemForm(forms.ModelForm):
     class Meta:
         model = TripPackingItem
         fields = ['item', 'quantity', 'is_packed', 'note']
+        labels = {
+            'item': 'Вещь',
+            'quantity': 'Количество',
+            'is_packed': 'Упаковано',
+            'note': 'Комментарий',
+        }
 
     def __init__(self, *args, **kwargs):
         self.owner = kwargs.pop('owner', None)
         super().__init__(*args, **kwargs)
         if self.owner:
             self.fields['item'].queryset = self.fields['item'].queryset.filter(owner=self.owner)
+        _apply_bootstrap(self)
 
     def clean_quantity(self):
         q = self.cleaned_data.get('quantity')

@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path('', views.trip_list, name='trip_list'),
+    path('dashboard/', views.dashboard, name='dashboard'),
 
     path('trips/create/', views.trip_create, name='trip_create'),
     path('trips/<int:pk>/', views.trip_detail, name='trip_detail'),
@@ -19,5 +20,6 @@ urlpatterns = [
 
     path('trips/<int:trip_pk>/packing/add/', views.trip_packing_add, name='trip_packing_add'),
     path('packing/<int:pk>/toggle/', views.trip_packing_toggle, name='trip_packing_toggle'),
+    path('api/packing/<int:pk>/toggle/', views.trip_packing_toggle_api, name='trip_packing_toggle_api'),
     path('packing/<int:pk>/remove/', views.trip_packing_remove, name='trip_packing_remove'),
 ]

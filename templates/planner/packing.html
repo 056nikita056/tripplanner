@@ -3,8 +3,8 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>
-    <h1 class="h3 mb-0">Список вещей list</h1>
-    <div class="text-secondary">Trip: <a href="{% url 'trip_detail' trip.pk %}">{{ trip.title }}</a></div>
+    <h1 class="h3 mb-0">Список вещей</h1>
+    <div class="text-secondary">Поездка: <a href="{% url 'trip_detail' trip.pk %}">{{ trip.title }}</a></div>
   </div>
 </div>
 
@@ -16,18 +16,18 @@
         {% csrf_token %}
         {{ link_form.non_field_errors }}
         <div class="mb-3">
-          <label class="form-label" for="id_item">Item</label>
+          <label class="form-label" for="id_item">Вещь</label>
           {{ link_form.item }}
           {{ link_form.item.errors }}
         </div>
         <div class="row">
           <div class="col">
-            <label class="form-label" for="id_quantity">Qty</label>
+            <label class="form-label" for="id_quantity">Кол-во</label>
             {{ link_form.quantity }}
             {{ link_form.quantity.errors }}
           </div>
           <div class="col">
-            <label class="form-label" for="id_note">Note</label>
+            <label class="form-label" for="id_note">Комментарий</label>
             {{ link_form.note }}
             {{ link_form.note.errors }}
           </div>
@@ -40,12 +40,12 @@
         {% csrf_token %}
         {{ item_form.non_field_errors }}
         <div class="mb-2">
-          <label class="form-label" for="id_name">Name</label>
+          <label class="form-label" for="id_name">Название</label>
           {{ item_form.name }}
           {{ item_form.name.errors }}
         </div>
         <div class="mb-2">
-          <label class="form-label" for="id_category">Category</label>
+          <label class="form-label" for="id_category">Категория</label>
           {{ item_form.category }}
           {{ item_form.category.errors }}
         </div>
@@ -56,16 +56,16 @@
 
   <div class="col-lg-7">
     <div class="card card-body">
-      <h2 class="h5">Items</h2>
+      <h2 class="h5">Вещи</h2>
       {% if links %}
         <div class="table-responsive">
           <table class="table align-middle">
             <thead>
               <tr>
-                <th>Item</th>
-                <th class="text-center">Qty</th>
-                <th>Note</th>
-                <th class="text-center">Packed</th>
+                <th>Вещь</th>
+                <th class="text-center">Кол-во</th>
+                <th>Комментарий</th>
+                <th class="text-center">Упаковано</th>
                 <th></th>
               </tr>
             </thead>
@@ -77,16 +77,16 @@
                   <td>{{ l.note }}</td>
                   <td class="text-center">
                     {% if l.is_packed %}
-                      <span class="badge text-bg-success">Yes</span>
+                      <span class="badge text-bg-success">Да</span>
                     {% else %}
-                      <span class="badge text-bg-secondary">No</span>
+                      <span class="badge text-bg-secondary">Нет</span>
                     {% endif %}
                   </td>
                   <td class="text-end">
                     <form method="post" class="d-inline">
                       {% csrf_token %}
                       <input type="hidden" name="link_id" value="{{ l.id }}">
-                      <button class="btn btn-sm btn-outline-secondary" type="submit" name="action" value="toggle">Toggle</button>
+                      <button class="btn btn-sm btn-outline-secondary" type="submit" name="action" value="toggle">Отметить</button>
                     </form>
                     <form method="post" class="d-inline">
                       {% csrf_token %}
