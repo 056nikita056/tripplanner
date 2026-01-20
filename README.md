@@ -1,4 +1,4 @@
-# TripPlanner (Django MVP)
+# TripPlanner
 
 Сервис для планирования поездок: поездки, активности/расходы, список вещей и аналитика по бюджету.
 
@@ -47,4 +47,7 @@ python manage.py runserver
    - выполнить `python manage.py collectstatic`
 
 ## Скриншоты
-Добавь 2–3 скрина: список поездок, карточка поездки с диаграммами, список вещей.
+<img width="1078" height="530" alt="image" src="https://github.com/user-attachments/assets/c5a5a5c6-1837-471f-beba-018f5e36b5e3" />
+<img width="1081" height="647" alt="image" src="https://github.com/user-attachments/assets/9c723ae1-ea1f-46b1-9baa-99bfb0475253" />
+
+
