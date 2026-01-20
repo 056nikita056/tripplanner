@@ -25,8 +25,8 @@
   <div class="col-md-3">
     <div class="card card-body">
       <div class="text-secondary">Суммарный бюджет</div>
-      <div class="h4 mb-0">{{ trip_stats.total_budget|default:0 }}</div>
-      <div class="text-secondary small">Средний: {{ trip_stats.avg_budget|floatformat:0|default:"0" }}</div>
+      <div class="h4 mb-0">{{ trip_stats.total_budget|default_if_none:0|floatformat:2 }} $</div>
+      <div class="text-secondary small">Средний: {{ trip_stats.avg_budget|default_if_none:0|floatformat:2 }} $</div>
     </div>
   </div>
 </div>
@@ -38,11 +38,11 @@
       <div class="row g-2">
         <div class="col-sm-6">
           <div class="text-secondary">Потрачено всего</div>
-          <div class="h4">{{ activity_stats.total_spent|default:0 }}</div>
+          <div class="h4">{{ activity_stats.total_spent|default_if_none:0|floatformat:2 }} $</div>
         </div>
         <div class="col-sm-6">
           <div class="text-secondary">Средняя стоимость активности</div>
-          <div class="h4">{{ activity_stats.avg_activity_cost|floatformat:0|default:"0" }}</div>
+          <div class="h4">{{ activity_stats.avg_activity_cost|default_if_none:0|floatformat:2 }} $</div>
         </div>
       </div>
       <div class="text-secondary small mt-2">Данные считаются по вашим поездкам.</div>
@@ -67,7 +67,7 @@
                 <tr>
                   <td>{{ d.destination__country }} · {{ d.destination__name }}</td>
                   <td class="text-center">{{ d.trips_count }}</td>
-                  <td class="text-end">{{ d.budget_sum|default:0 }}</td>
+                  <td class="text-end">{{ d.budget_sum|default_if_none:0|floatformat:2 }} $</td>
                 </tr>
               {% endfor %}
             </tbody>
@@ -97,7 +97,7 @@
                 <tr>
                   <td>{{ t.tags__name|default:"Без тега" }}</td>
                   <td class="text-center">{{ t.uses }}</td>
-                  <td class="text-end">{{ t.total|default:0 }}</td>
+                  <td class="text-end">{{ t.total|default_if_none:0|floatformat:2 }} $</td>
                 </tr>
               {% endfor %}
             </tbody>

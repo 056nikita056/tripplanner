@@ -40,11 +40,24 @@ class TripForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         _apply_bootstrap(self)
 
+        dest_qs = self.fields['destination'].queryset
+        if not dest_qs.exists():
+            self.fields['destination'].required = False
+            self.fields['destination'].disabled = True
+            self.fields['destination'].help_text = (
+                'Направлений пока нет. Добавьте направление в админке, '
+                'затем создайте поездку.'
+            )
+
     def clean(self):
         cleaned = super().clean()
         start = cleaned.get('start_date')
         end = cleaned.get('end_date')
         budget = cleaned.get('budget')
+        if self.fields['destination'].disabled:
+            raise forms.ValidationError(
+                'Нельзя создать поездку: сначала добавьте хотя бы одно направление.'
+            )
         if start and end and end < start:
             raise forms.ValidationError('Дата окончания должна быть после даты начала.')
         if budget is not None and budget < 0:

@@ -56,6 +56,8 @@ def trip_list(request):
         Destination.objects.filter(trips__in=qs).distinct().order_by('country', 'name')
     )
 
+    has_destinations = Destination.objects.exists()
+
     paginator = Paginator(qs, 10)
     page_obj = paginator.get_page(request.GET.get('page') or 1)
 
@@ -69,6 +71,7 @@ def trip_list(request):
         'q': q,
         'sort': sort,
         'destinations': destinations,
+        'has_destinations': has_destinations,
         'dest_id': dest_id,
         'qs_params': qs_params,
     }

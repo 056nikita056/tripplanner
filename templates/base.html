@@ -17,7 +17,10 @@
         <div class="ms-auto d-flex gap-2">
           {% if user.is_authenticated %}
             <span class="navbar-text">{{ user.username }}</span>
-            <a class="btn btn-outline-secondary btn-sm" href="{% url 'logout' %}">Выйти</a>
+            <form method="post" action="{% url 'logout' %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-secondary btn-sm">Выйти</button>
+            </form>
           {% else %}
             <a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Войти</a>
             <a class="btn btn-primary btn-sm" href="{% url 'signup' %}">Регистрация</a>

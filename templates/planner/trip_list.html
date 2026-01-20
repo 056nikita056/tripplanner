@@ -25,17 +25,27 @@
     </select>
   </div>
   <div class="col-md-3">
-    <select class="form-select" name="dest">
-      <option value="">Все направления</option>
-      {% for d in destinations %}
-        <option value="{{ d.id }}" {% if dest_id == d.id %}selected{% endif %}>{{ d }}</option>
-      {% endfor %}
+    <select class="form-select" name="dest" {% if not has_destinations %}disabled{% endif %}>
+      {% if not has_destinations %}
+        <option value="">Нет направлений</option>
+      {% else %}
+        <option value="">Все направления</option>
+        {% for d in destinations %}
+          <option value="{{ d.id }}" {% if dest_id == d.id %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+      {% endif %}
     </select>
   </div>
   <div class="col-md-2">
     <button class="btn btn-secondary w-100" type="submit">Применить</button>
   </div>
 </form>
+
+{% if not has_destinations %}
+  <div class="alert alert-warning">
+    Направлений пока нет. Добавь хотя бы одно направление в админке, затем можно создавать поездки.
+  </div>
+{% endif %}
 
 <div class="row g-3">
   {% for trip in trips %}
@@ -49,7 +59,7 @@
             {% endif %}
           </div>
           <div class="text-secondary">{{ trip.destination }} · {{ trip.start_date }} → {{ trip.end_date }}</div>
-          <div class="mt-2">Бюджет: <strong>{{ trip.budget }}</strong></div>
+          <div class="mt-2">Бюджет: <strong>{{ trip.budget|default_if_none:0|floatformat:2 }} $</strong></div>
         </div>
       </div>
     </div>
